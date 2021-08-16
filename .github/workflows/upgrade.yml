@@ -19,10 +19,12 @@ jobs:
       - name: Install dependencies
         run: yarn install --check-files --frozen-lockfile
       - name: Upgrade dependencies
-        run: npx projen upgrade
+        run: CDK_DEP_VERSION=$(yarn info @aws-solutions-constructs/core version -s) npx
+          projen upgrade
       - name: Build
         id: build
-        run: npx projen build && echo "::set-output name=conclusion::success" || echo
+        run: CDK_DEP_VERSION=$(yarn info @aws-solutions-constructs/core version -s) npx
+          projen build && echo "::set-output name=conclusion::success" || echo
           "::set-output name=conclusion::failure"
       - name: Create Patch
         run: |-

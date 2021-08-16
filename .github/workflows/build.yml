@@ -26,7 +26,8 @@ jobs:
       - name: Install dependencies
         run: yarn install --check-files --frozen-lockfile
       - name: build
-        run: npx projen build
+        run: CDK_DEP_VERSION=$(yarn info @aws-solutions-constructs/core version -s) npx
+          projen build
       - name: Check for changes
         id: git_diff
         run: git diff --exit-code || echo "::set-output name=has_changes::true"

@@ -1,0 +1,707 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Snapshot 1`] = `
+Object {
+  "Outputs": Object {
+    "GatewayRestApiEndpoint231C1D06": Object {
+      "Value": Object {
+        "Fn::Join": Array [
+          "",
+          Array [
+            "https://",
+            Object {
+              "Ref": "GatewayRestApi1CBA9451",
+            },
+            ".execute-api.",
+            Object {
+              "Ref": "AWS::Region",
+            },
+            ".",
+            Object {
+              "Ref": "AWS::URLSuffix",
+            },
+            "/",
+            Object {
+              "Ref": "GatewayRestApiDeploymentStageprod86E8EB27",
+            },
+            "/",
+          ],
+        ],
+      },
+    },
+  },
+  "Resources": Object {
+    "GatewayApiAccessLogGroup3CFE23D4": Object {
+      "DeletionPolicy": "Delete",
+      "Metadata": Object {
+        "cfn_nag": Object {
+          "rules_to_suppress": Array [
+            Object {
+              "id": "W86",
+              "reason": "Retention period for CloudWatchLogs LogGroups are set to 'Never Expire' to preserve customer data indefinitely",
+            },
+            Object {
+              "id": "W84",
+              "reason": "By default CloudWatchLogs LogGroups data is encrypted using the CloudWatch server-side encryption keys (AWS Managed Keys)",
+            },
+          ],
+        },
+      },
+      "Type": "AWS::Logs::LogGroup",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "GatewayLambdaRestApiAccount205244E5": Object {
+      "DependsOn": Array [
+        "GatewayRestApi1CBA9451",
+      ],
+      "Properties": Object {
+        "CloudWatchRoleArn": Object {
+          "Fn::GetAtt": Array [
+            "GatewayLambdaRestApiCloudWatchRole18D8643C",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::ApiGateway::Account",
+    },
+    "GatewayLambdaRestApiCloudWatchRole18D8643C": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": "apigateway.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "Policies": Array [
+          Object {
+            "PolicyDocument": Object {
+              "Statement": Array [
+                Object {
+                  "Action": Array [
+                    "logs:CreateLogGroup",
+                    "logs:CreateLogStream",
+                    "logs:DescribeLogGroups",
+                    "logs:DescribeLogStreams",
+                    "logs:PutLogEvents",
+                    "logs:GetLogEvents",
+                    "logs:FilterLogEvents",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Fn::Join": Array [
+                      "",
+                      Array [
+                        "arn:",
+                        Object {
+                          "Ref": "AWS::Partition",
+                        },
+                        ":logs:",
+                        Object {
+                          "Ref": "AWS::Region",
+                        },
+                        ":",
+                        Object {
+                          "Ref": "AWS::AccountId",
+                        },
+                        ":*",
+                      ],
+                    ],
+                  },
+                },
+              ],
+              "Version": "2012-10-17",
+            },
+            "PolicyName": "LambdaRestApiCloudWatchRolePolicy",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "GatewayRestApi1CBA9451": Object {
+      "Properties": Object {
+        "EndpointConfiguration": Object {
+          "Types": Array [
+            "EDGE",
+          ],
+        },
+        "Name": "RestApi",
+      },
+      "Type": "AWS::ApiGateway::RestApi",
+    },
+    "GatewayRestApiDeployment0060DBE22fc6fc4a470a0beba79b1cfc55f2a825": Object {
+      "DependsOn": Array [
+        "GatewayRestApiidDELETE6D223887",
+        "GatewayRestApiidGETC23F3348",
+        "GatewayRestApiidPUT32F1E6C5",
+        "GatewayRestApiidD030986A",
+        "GatewayRestApiPOSTCEFA97D6",
+      ],
+      "Metadata": Object {
+        "cfn_nag": Object {
+          "rules_to_suppress": Array [
+            Object {
+              "id": "W45",
+              "reason": "ApiGateway has AccessLogging enabled in AWS::ApiGateway::Stage resource, but cfn_nag checkes for it in AWS::ApiGateway::Deployment resource",
+            },
+          ],
+        },
+      },
+      "Properties": Object {
+        "Description": "Automatically created by the RestApi construct",
+        "RestApiId": Object {
+          "Ref": "GatewayRestApi1CBA9451",
+        },
+      },
+      "Type": "AWS::ApiGateway::Deployment",
+    },
+    "GatewayRestApiDeploymentStageprod86E8EB27": Object {
+      "Properties": Object {
+        "AccessLogSetting": Object {
+          "DestinationArn": Object {
+            "Fn::GetAtt": Array [
+              "GatewayApiAccessLogGroup3CFE23D4",
+              "Arn",
+            ],
+          },
+          "Format": "{\\"requestId\\":\\"$context.requestId\\",\\"ip\\":\\"$context.identity.sourceIp\\",\\"user\\":\\"$context.identity.user\\",\\"caller\\":\\"$context.identity.caller\\",\\"requestTime\\":\\"$context.requestTime\\",\\"httpMethod\\":\\"$context.httpMethod\\",\\"resourcePath\\":\\"$context.resourcePath\\",\\"status\\":\\"$context.status\\",\\"protocol\\":\\"$context.protocol\\",\\"responseLength\\":\\"$context.responseLength\\"}",
+        },
+        "DeploymentId": Object {
+          "Ref": "GatewayRestApiDeployment0060DBE22fc6fc4a470a0beba79b1cfc55f2a825",
+        },
+        "MethodSettings": Array [
+          Object {
+            "DataTraceEnabled": false,
+            "HttpMethod": "*",
+            "LoggingLevel": "INFO",
+            "ResourcePath": "/*",
+          },
+        ],
+        "RestApiId": Object {
+          "Ref": "GatewayRestApi1CBA9451",
+        },
+        "StageName": "prod",
+        "TracingEnabled": true,
+      },
+      "Type": "AWS::ApiGateway::Stage",
+    },
+    "GatewayRestApiPOSTCEFA97D6": Object {
+      "Properties": Object {
+        "AuthorizationType": "AWS_IAM",
+        "HttpMethod": "POST",
+        "Integration": Object {
+          "Credentials": Object {
+            "Fn::GetAtt": Array [
+              "GatewayapigatewayroleFABC3E58",
+              "Arn",
+            ],
+          },
+          "IntegrationHttpMethod": "POST",
+          "IntegrationResponses": Array [
+            Object {
+              "StatusCode": "200",
+            },
+            Object {
+              "ResponseTemplates": Object {
+                "text/html": "Error",
+              },
+              "SelectionPattern": "500",
+              "StatusCode": "500",
+            },
+          ],
+          "PassthroughBehavior": "NEVER",
+          "RequestParameters": Object {
+            "integration.request.header.Content-Type": "'application/json'",
+          },
+          "RequestTemplates": Object {
+            "application/json": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  "{
+  \\"TableName\\": \\"",
+                  Object {
+                    "Ref": "TableCD117FA1",
+                  },
+                  "\\",
+  \\"Item\\": {
+    \\"id\\": {
+      \\"S\\": \\"$input.path('$.id')\\"
+    },
+    \\"EventCount\\": {
+      \\"N\\": \\"$input.path('$.EventCount')\\"
+    },
+    \\"Message\\": {
+      \\"S\\": \\"$input.path('$.Message')\\"
+    }
+  }
+}",
+                ],
+              ],
+            },
+          },
+          "Type": "AWS",
+          "Uri": Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:",
+                Object {
+                  "Ref": "AWS::Partition",
+                },
+                ":apigateway:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":dynamodb:action/PutItem",
+              ],
+            ],
+          },
+        },
+        "MethodResponses": Array [
+          Object {
+            "ResponseParameters": Object {
+              "method.response.header.Content-Type": true,
+            },
+            "StatusCode": "200",
+          },
+          Object {
+            "ResponseParameters": Object {
+              "method.response.header.Content-Type": true,
+            },
+            "StatusCode": "500",
+          },
+        ],
+        "ResourceId": Object {
+          "Fn::GetAtt": Array [
+            "GatewayRestApi1CBA9451",
+            "RootResourceId",
+          ],
+        },
+        "RestApiId": Object {
+          "Ref": "GatewayRestApi1CBA9451",
+        },
+      },
+      "Type": "AWS::ApiGateway::Method",
+    },
+    "GatewayRestApiUsagePlan5E905B1D": Object {
+      "Properties": Object {
+        "ApiStages": Array [
+          Object {
+            "ApiId": Object {
+              "Ref": "GatewayRestApi1CBA9451",
+            },
+            "Stage": Object {
+              "Ref": "GatewayRestApiDeploymentStageprod86E8EB27",
+            },
+            "Throttle": Object {},
+          },
+        ],
+      },
+      "Type": "AWS::ApiGateway::UsagePlan",
+    },
+    "GatewayRestApiidD030986A": Object {
+      "Properties": Object {
+        "ParentId": Object {
+          "Fn::GetAtt": Array [
+            "GatewayRestApi1CBA9451",
+            "RootResourceId",
+          ],
+        },
+        "PathPart": "{id}",
+        "RestApiId": Object {
+          "Ref": "GatewayRestApi1CBA9451",
+        },
+      },
+      "Type": "AWS::ApiGateway::Resource",
+    },
+    "GatewayRestApiidDELETE6D223887": Object {
+      "Properties": Object {
+        "AuthorizationType": "AWS_IAM",
+        "HttpMethod": "DELETE",
+        "Integration": Object {
+          "Credentials": Object {
+            "Fn::GetAtt": Array [
+              "GatewayapigatewayroleFABC3E58",
+              "Arn",
+            ],
+          },
+          "IntegrationHttpMethod": "POST",
+          "IntegrationResponses": Array [
+            Object {
+              "StatusCode": "200",
+            },
+            Object {
+              "ResponseTemplates": Object {
+                "text/html": "Error",
+              },
+              "SelectionPattern": "500",
+              "StatusCode": "500",
+            },
+          ],
+          "PassthroughBehavior": "NEVER",
+          "RequestParameters": Object {
+            "integration.request.header.Content-Type": "'application/json'",
+          },
+          "RequestTemplates": Object {
+            "application/json": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  "{
+  \\"TableName\\": \\"",
+                  Object {
+                    "Ref": "TableCD117FA1",
+                  },
+                  "\\",
+  \\"Key\\": {
+    \\"id\\": {
+      \\"S\\": \\"$input.params('id')\\"
+    }
+  },
+  \\"ConditionExpression\\": \\"attribute_not_exists(Replies)\\",
+  \\"ReturnValues\\": \\"ALL_OLD\\"
+}",
+                ],
+              ],
+            },
+          },
+          "Type": "AWS",
+          "Uri": Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:",
+                Object {
+                  "Ref": "AWS::Partition",
+                },
+                ":apigateway:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":dynamodb:action/DeleteItem",
+              ],
+            ],
+          },
+        },
+        "MethodResponses": Array [
+          Object {
+            "ResponseParameters": Object {
+              "method.response.header.Content-Type": true,
+            },
+            "StatusCode": "200",
+          },
+          Object {
+            "ResponseParameters": Object {
+              "method.response.header.Content-Type": true,
+            },
+            "StatusCode": "500",
+          },
+        ],
+        "ResourceId": Object {
+          "Ref": "GatewayRestApiidD030986A",
+        },
+        "RestApiId": Object {
+          "Ref": "GatewayRestApi1CBA9451",
+        },
+      },
+      "Type": "AWS::ApiGateway::Method",
+    },
+    "GatewayRestApiidGETC23F3348": Object {
+      "Properties": Object {
+        "AuthorizationType": "AWS_IAM",
+        "HttpMethod": "GET",
+        "Integration": Object {
+          "Credentials": Object {
+            "Fn::GetAtt": Array [
+              "GatewayapigatewayroleFABC3E58",
+              "Arn",
+            ],
+          },
+          "IntegrationHttpMethod": "POST",
+          "IntegrationResponses": Array [
+            Object {
+              "StatusCode": "200",
+            },
+            Object {
+              "ResponseTemplates": Object {
+                "text/html": "Error",
+              },
+              "SelectionPattern": "500",
+              "StatusCode": "500",
+            },
+          ],
+          "PassthroughBehavior": "NEVER",
+          "RequestParameters": Object {
+            "integration.request.header.Content-Type": "'application/json'",
+          },
+          "RequestTemplates": Object {
+            "application/json": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  "{
+\\"TableName\\": \\"",
+                  Object {
+                    "Ref": "TableCD117FA1",
+                  },
+                  "\\",
+ \\"KeyConditionExpression\\": \\"id = :v1\\",
+    \\"ExpressionAttributeValues\\": {
+        \\":v1\\": {
+            \\"S\\": \\"$input.params('id')\\"
+        }
+    }
+}",
+                ],
+              ],
+            },
+          },
+          "Type": "AWS",
+          "Uri": Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:",
+                Object {
+                  "Ref": "AWS::Partition",
+                },
+                ":apigateway:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":dynamodb:action/Query",
+              ],
+            ],
+          },
+        },
+        "MethodResponses": Array [
+          Object {
+            "ResponseParameters": Object {
+              "method.response.header.Content-Type": true,
+            },
+            "StatusCode": "200",
+          },
+          Object {
+            "ResponseParameters": Object {
+              "method.response.header.Content-Type": true,
+            },
+            "StatusCode": "500",
+          },
+        ],
+        "ResourceId": Object {
+          "Ref": "GatewayRestApiidD030986A",
+        },
+        "RestApiId": Object {
+          "Ref": "GatewayRestApi1CBA9451",
+        },
+      },
+      "Type": "AWS::ApiGateway::Method",
+    },
+    "GatewayRestApiidPUT32F1E6C5": Object {
+      "Properties": Object {
+        "AuthorizationType": "AWS_IAM",
+        "HttpMethod": "PUT",
+        "Integration": Object {
+          "Credentials": Object {
+            "Fn::GetAtt": Array [
+              "GatewayapigatewayroleFABC3E58",
+              "Arn",
+            ],
+          },
+          "IntegrationHttpMethod": "POST",
+          "IntegrationResponses": Array [
+            Object {
+              "StatusCode": "200",
+            },
+            Object {
+              "ResponseTemplates": Object {
+                "text/html": "Error",
+              },
+              "SelectionPattern": "500",
+              "StatusCode": "500",
+            },
+          ],
+          "PassthroughBehavior": "NEVER",
+          "RequestParameters": Object {
+            "integration.request.header.Content-Type": "'application/json'",
+          },
+          "RequestTemplates": Object {
+            "application/json": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  "{
+  \\"TableName\\": \\"",
+                  Object {
+                    "Ref": "TableCD117FA1",
+                  },
+                  "\\",
+  \\"Key\\": {
+    \\"id\\": {
+      \\"S\\": \\"$input.path('$.id')\\"
+    }
+  },
+  \\"ExpressionAttributeValues\\": {
+    \\":event_count\\": {
+      \\"N\\": \\"$input.path('$.EventCount')\\"
+    },
+    \\":message\\": {
+      \\"S\\": \\"$input.path('$.Message')\\"
+    }
+  },
+  \\"UpdateExpression\\": \\"ADD EventCount :event_count SET Message = :message\\",
+  \\"ReturnValues\\": \\"ALL_NEW\\"
+}",
+                ],
+              ],
+            },
+          },
+          "Type": "AWS",
+          "Uri": Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:",
+                Object {
+                  "Ref": "AWS::Partition",
+                },
+                ":apigateway:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":dynamodb:action/UpdateItem",
+              ],
+            ],
+          },
+        },
+        "MethodResponses": Array [
+          Object {
+            "ResponseParameters": Object {
+              "method.response.header.Content-Type": true,
+            },
+            "StatusCode": "200",
+          },
+          Object {
+            "ResponseParameters": Object {
+              "method.response.header.Content-Type": true,
+            },
+            "StatusCode": "500",
+          },
+        ],
+        "ResourceId": Object {
+          "Ref": "GatewayRestApiidD030986A",
+        },
+        "RestApiId": Object {
+          "Ref": "GatewayRestApi1CBA9451",
+        },
+      },
+      "Type": "AWS::ApiGateway::Method",
+    },
+    "GatewayapigatewayroleDefaultPolicy2CE717A7": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "dynamodb:PutItem",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::GetAtt": Array [
+                  "TableCD117FA1",
+                  "Arn",
+                ],
+              },
+            },
+            Object {
+              "Action": "dynamodb:Query",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::GetAtt": Array [
+                  "TableCD117FA1",
+                  "Arn",
+                ],
+              },
+            },
+            Object {
+              "Action": "dynamodb:UpdateItem",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::GetAtt": Array [
+                  "TableCD117FA1",
+                  "Arn",
+                ],
+              },
+            },
+            Object {
+              "Action": "dynamodb:DeleteItem",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::GetAtt": Array [
+                  "TableCD117FA1",
+                  "Arn",
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "GatewayapigatewayroleDefaultPolicy2CE717A7",
+        "Roles": Array [
+          Object {
+            "Ref": "GatewayapigatewayroleFABC3E58",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "GatewayapigatewayroleFABC3E58": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": "apigateway.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "TableCD117FA1": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "AttributeDefinitions": Array [
+          Object {
+            "AttributeName": "id",
+            "AttributeType": "S",
+          },
+        ],
+        "BillingMode": "PAY_PER_REQUEST",
+        "KeySchema": Array [
+          Object {
+            "AttributeName": "id",
+            "KeyType": "HASH",
+          },
+        ],
+        "PointInTimeRecoverySpecification": Object {
+          "PointInTimeRecoveryEnabled": true,
+        },
+        "SSESpecification": Object {
+          "SSEEnabled": true,
+        },
+      },
+      "Type": "AWS::DynamoDB::Table",
+      "UpdateReplacePolicy": "Delete",
+    },
+  },
+}
+`;
