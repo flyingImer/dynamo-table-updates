@@ -19,7 +19,7 @@
     },
     {
       "name": "aws-cdk",
-      "version": "^1.95.2",
+      "version": "1.117.0",
       "type": "build"
     },
     {
@@ -75,12 +75,32 @@
     },
     {
       "name": "@aws-cdk/assert",
-      "version": "^1.95.2",
+      "version": "1.117.0",
+      "type": "runtime"
+    },
+    {
+      "name": "@aws-cdk/aws-dynamodb",
+      "version": "1.117.0",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/core",
-      "version": "^1.95.2",
+      "version": "1.117.0",
+      "type": "runtime"
+    },
+    {
+      "name": "@aws-solutions-constructs/aws-apigateway-dynamodb",
+      "version": "1.117.0",
+      "type": "runtime"
+    },
+    {
+      "name": "@aws-solutions-constructs/aws-dynamodbstreams-lambda",
+      "version": "1.117.0",
+      "type": "runtime"
+    },
+    {
+      "name": "@aws-solutions-constructs/core",
+      "version": "1.117.0",
       "type": "runtime"
     }
   ],
