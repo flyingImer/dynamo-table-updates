@@ -15,15 +15,23 @@ const project = new AwsCdkTypeScriptApp({
     '@aws-cdk/aws-apigateway',
     '@aws-cdk/aws-dynamodb',
     '@aws-cdk/aws-iam',
-    '@aws-cdk/aws-lambda',
+    '@aws-cdk/aws-lambda-nodejs',
+    '@aws-cdk/aws-logs',
+    '@aws-cdk/aws-sns',
+    '@aws-cdk/aws-sqs',
   ], /* Which AWS CDK modules (those that start with "@aws-cdk/") this app uses. */
   deps: [
     `${DEP_CORE_PKG_NAME}@${DEPS_COMPATIBLE_CDK_VERSION}`,
     `@aws-solutions-constructs/aws-apigateway-dynamodb@${DEPS_COMPATIBLE_CDK_VERSION}`,
     `@aws-solutions-constructs/aws-dynamodbstreams-lambda@${DEPS_COMPATIBLE_CDK_VERSION}`,
+    `@aws-solutions-constructs/aws-lambda-sns@${DEPS_COMPATIBLE_CDK_VERSION}`,
+    `@aws-solutions-constructs/aws-sns-sqs@${DEPS_COMPATIBLE_CDK_VERSION}`,
   ], /* Runtime dependencies of this module. */
   description: 'An AWS CDK application (fronted by API GW) which integrates the DynamoDB table with stream solutions for near real-time updates to downstream.', /* The description is just a string that helps people understand the purpose of the package. */
-  // devDeps: [],                       /* Build dependencies for this module. */
+  devDeps: [
+    '@types/aws-lambda',
+    'esbuild@0',
+  ], /* Build dependencies for this module. */
   // packageName: undefined,            /* The "name" in package.json. */
   projectType: ProjectType.APP, /* Which type of project this is (library/app). */
   // release: undefined,                /* Add release management to this project. */

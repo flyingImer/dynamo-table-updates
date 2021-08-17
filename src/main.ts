@@ -1,10 +1,17 @@
+import * as path from 'path';
 import { AttributeType, StreamViewType, Table } from '@aws-cdk/aws-dynamodb';
-import { PolicyStatement } from '@aws-cdk/aws-iam';
-import { Code, Runtime } from '@aws-cdk/aws-lambda';
+import { AccountPrincipal, AnyPrincipal, Effect, PolicyStatement } from '@aws-cdk/aws-iam';
+import { NodejsFunction } from '@aws-cdk/aws-lambda-nodejs';
+import { RetentionDays } from '@aws-cdk/aws-logs';
+import { Topic } from '@aws-cdk/aws-sns';
+import { QueueEncryption } from '@aws-cdk/aws-sqs';
 import { App, Construct, RemovalPolicy, Stack, StackProps } from '@aws-cdk/core';
 import { ApiGatewayToDynamoDB } from '@aws-solutions-constructs/aws-apigateway-dynamodb';
 import { DynamoDBStreamsToLambda } from '@aws-solutions-constructs/aws-dynamodbstreams-lambda';
+import { LambdaToSns } from '@aws-solutions-constructs/aws-lambda-sns';
+import { SnsToSqs } from '@aws-solutions-constructs/aws-sns-sqs';
 import { addProxyMethodToApiResource, DefaultTableProps } from '@aws-solutions-constructs/core';
+import { Removal } from './aspect';
 
 export class DynamoUpdatesStack extends Stack {
   private readonly PARTITION_KEY_NAME = 'rid';
@@ -26,15 +33,11 @@ export class DynamoUpdatesStack extends Stack {
         type: AttributeType.STRING,
       },
       stream: StreamViewType.KEYS_ONLY,
-      removalPolicy: RemovalPolicy.DESTROY,
     });
 
     // fronting gateway
     const gateway = new ApiGatewayToDynamoDB(this, 'Gateway', {
       existingTableObj: table,
-      logGroupProps: {
-        removalPolicy: RemovalPolicy.DESTROY,
-      },
       allowReadOperation: true,
       allowCreateOperation: true,
       allowUpdateOperation: true,
@@ -43,15 +46,39 @@ export class DynamoUpdatesStack extends Stack {
     });
     this.patchDeleteOperation(gateway, table);
 
+    // publish stream records to SNS topic
+    const publisher = new NodejsFunction(this, 'Publisher', {
+      entry: path.join(__dirname, 'publisher-lambda', 'index.ts'),
+      logRetention: RetentionDays.ONE_MONTH,
+    });
+
     // ddb stream
     new DynamoDBStreamsToLambda(this, 'DynamoStream', {
       existingTableInterface: table,
-      lambdaFunctionProps: {
-        code: Code.fromAsset(`${__dirname}/lambda`),
-        runtime: Runtime.NODEJS_12_X,
-        handler: 'index.handler',
+      existingLambdaObj: publisher,
+    });
+
+    // throughput first for ImmediateUpdates
+    const immediateTopic = new Topic(this, 'ImmediateUpdatesTopic');
+    this.applySecureTopicPolicy(immediateTopic);
+
+    new LambdaToSns(this, 'ImmediateUpdates', {
+      existingLambdaObj: publisher,
+      existingTopicObj: immediateTopic,
+    });
+
+    new SnsToSqs(this, 'ImmediateConsumer', {
+      enableEncryptionWithCustomerManagedKey: false,
+      existingTopicObj: immediateTopic,
+      queueProps: {
+        encryption: QueueEncryption.UNENCRYPTED,
       },
     });
+
+    // override all configured RemovalPolicy to DESTROY
+    new Removal(this, 'Removal', {
+      policy: RemovalPolicy.DESTROY,
+    }).applyScope(this);
   }
 
   /**
@@ -73,6 +100,65 @@ export class DynamoUpdatesStack extends Stack {
       apiResource: gateway.apiGateway.root.getResource(`{${this.PARTITION_KEY_NAME}}`)!,
       requestTemplate: '{\r\n  "TableName": "' + table.tableName + '",\r\n  "Key": {\r\n    ' + this.PRIMARY_KEYS_TEMPLATE + '  },\r\n  "ConditionExpression": "attribute_not_exists(Replies)",\r\n  "ReturnValues": "ALL_OLD"\r\n}',
     }));
+  }
+
+  private applySecureTopicPolicy(topic: Topic): void {
+
+    // Apply topic policy to enforce only the topic owner can publish to this topic
+    topic.addToResourcePolicy(
+      new PolicyStatement({
+        sid: 'TopicOwnerOnlyAccess',
+        resources: [
+          `${topic.topicArn}`,
+        ],
+        actions: [
+          'SNS:Publish',
+          'SNS:RemovePermission',
+          'SNS:SetTopicAttributes',
+          'SNS:DeleteTopic',
+          'SNS:ListSubscriptionsByTopic',
+          'SNS:GetTopicAttributes',
+          'SNS:AddPermission',
+        ],
+        principals: [new AccountPrincipal(Stack.of(topic).account)],
+        effect: Effect.ALLOW,
+        conditions:
+              {
+                StringEquals: {
+                  'AWS:SourceOwner': Stack.of(topic).account,
+                },
+              },
+      }),
+    );
+
+    // Apply Topic policy to enforce encryption of data in transit
+    topic.addToResourcePolicy(
+      new PolicyStatement({
+        sid: 'HttpsOnly',
+        resources: [
+          `${topic.topicArn}`,
+        ],
+        actions: [
+          'SNS:Publish',
+          'SNS:RemovePermission',
+          'SNS:SetTopicAttributes',
+          'SNS:DeleteTopic',
+          'SNS:ListSubscriptionsByTopic',
+          'SNS:GetTopicAttributes',
+          'SNS:Receive',
+          'SNS:AddPermission',
+          'SNS:Subscribe',
+        ],
+        principals: [new AnyPrincipal()],
+        effect: Effect.DENY,
+        conditions:
+              {
+                Bool: {
+                  'aws:SecureTransport': 'false',
+                },
+              },
+      }),
+    );
   }
 }
 
