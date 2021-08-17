@@ -134,12 +134,12 @@ Object {
       },
       "Type": "AWS::ApiGateway::RestApi",
     },
-    "GatewayRestApiDeployment0060DBE22fc6fc4a470a0beba79b1cfc55f2a825": Object {
+    "GatewayRestApiDeployment0060DBE263bc791de063415d664d6caabfd9af5f": Object {
       "DependsOn": Array [
-        "GatewayRestApiidDELETE6D223887",
-        "GatewayRestApiidGETC23F3348",
-        "GatewayRestApiidPUT32F1E6C5",
-        "GatewayRestApiidD030986A",
+        "GatewayRestApiridDELETEC030980B",
+        "GatewayRestApiridGET95A5885F",
+        "GatewayRestApiridPUT002A7541",
+        "GatewayRestApiridEB78EB12",
         "GatewayRestApiPOSTCEFA97D6",
       ],
       "Metadata": Object {
@@ -172,7 +172,7 @@ Object {
           "Format": "{\\"requestId\\":\\"$context.requestId\\",\\"ip\\":\\"$context.identity.sourceIp\\",\\"user\\":\\"$context.identity.user\\",\\"caller\\":\\"$context.identity.caller\\",\\"requestTime\\":\\"$context.requestTime\\",\\"httpMethod\\":\\"$context.httpMethod\\",\\"resourcePath\\":\\"$context.resourcePath\\",\\"status\\":\\"$context.status\\",\\"protocol\\":\\"$context.protocol\\",\\"responseLength\\":\\"$context.responseLength\\"}",
         },
         "DeploymentId": Object {
-          "Ref": "GatewayRestApiDeployment0060DBE22fc6fc4a470a0beba79b1cfc55f2a825",
+          "Ref": "GatewayRestApiDeployment0060DBE263bc791de063415d664d6caabfd9af5f",
         },
         "MethodSettings": Array [
           Object {
@@ -230,8 +230,11 @@ Object {
                   },
                   "\\",
   \\"Item\\": {
-    \\"id\\": {
-      \\"S\\": \\"$input.path('$.id')\\"
+    \\"rid\\": {
+      \\"S\\": \\"$input.path('$.rid')\\"
+    },
+    \\"fid\\": {
+      \\"S\\": \\"$input.path('$.fid')\\"
     },
     \\"EventCount\\": {
       \\"N\\": \\"$input.path('$.EventCount')\\"
@@ -305,22 +308,7 @@ Object {
       },
       "Type": "AWS::ApiGateway::UsagePlan",
     },
-    "GatewayRestApiidD030986A": Object {
-      "Properties": Object {
-        "ParentId": Object {
-          "Fn::GetAtt": Array [
-            "GatewayRestApi1CBA9451",
-            "RootResourceId",
-          ],
-        },
-        "PathPart": "{id}",
-        "RestApiId": Object {
-          "Ref": "GatewayRestApi1CBA9451",
-        },
-      },
-      "Type": "AWS::ApiGateway::Resource",
-    },
-    "GatewayRestApiidDELETE6D223887": Object {
+    "GatewayRestApiridDELETEC030980B": Object {
       "Properties": Object {
         "AuthorizationType": "AWS_IAM",
         "HttpMethod": "DELETE",
@@ -360,10 +348,12 @@ Object {
                   },
                   "\\",
   \\"Key\\": {
-    \\"id\\": {
-      \\"S\\": \\"$input.params('id')\\"
-    }
-  },
+    \\"rid\\": {
+      \\"S\\": \\"$input.path('$.rid')\\"
+    },
+    \\"fid\\": {
+      \\"S\\": \\"$input.path('$.fid')\\"
+    }  },
   \\"ConditionExpression\\": \\"attribute_not_exists(Replies)\\",
   \\"ReturnValues\\": \\"ALL_OLD\\"
 }",
@@ -404,7 +394,7 @@ Object {
           },
         ],
         "ResourceId": Object {
-          "Ref": "GatewayRestApiidD030986A",
+          "Ref": "GatewayRestApiridEB78EB12",
         },
         "RestApiId": Object {
           "Ref": "GatewayRestApi1CBA9451",
@@ -412,7 +402,22 @@ Object {
       },
       "Type": "AWS::ApiGateway::Method",
     },
-    "GatewayRestApiidGETC23F3348": Object {
+    "GatewayRestApiridEB78EB12": Object {
+      "Properties": Object {
+        "ParentId": Object {
+          "Fn::GetAtt": Array [
+            "GatewayRestApi1CBA9451",
+            "RootResourceId",
+          ],
+        },
+        "PathPart": "{rid}",
+        "RestApiId": Object {
+          "Ref": "GatewayRestApi1CBA9451",
+        },
+      },
+      "Type": "AWS::ApiGateway::Resource",
+    },
+    "GatewayRestApiridGET95A5885F": Object {
       "Properties": Object {
         "AuthorizationType": "AWS_IAM",
         "HttpMethod": "GET",
@@ -451,10 +456,10 @@ Object {
                     "Ref": "TableCD117FA1",
                   },
                   "\\",
- \\"KeyConditionExpression\\": \\"id = :v1\\",
+ \\"KeyConditionExpression\\": \\"rid = :v1\\",
     \\"ExpressionAttributeValues\\": {
         \\":v1\\": {
-            \\"S\\": \\"$input.params('id')\\"
+            \\"S\\": \\"$input.params('rid')\\"
         }
     }
 }",
@@ -495,7 +500,7 @@ Object {
           },
         ],
         "ResourceId": Object {
-          "Ref": "GatewayRestApiidD030986A",
+          "Ref": "GatewayRestApiridEB78EB12",
         },
         "RestApiId": Object {
           "Ref": "GatewayRestApi1CBA9451",
@@ -503,7 +508,7 @@ Object {
       },
       "Type": "AWS::ApiGateway::Method",
     },
-    "GatewayRestApiidPUT32F1E6C5": Object {
+    "GatewayRestApiridPUT002A7541": Object {
       "Properties": Object {
         "AuthorizationType": "AWS_IAM",
         "HttpMethod": "PUT",
@@ -543,8 +548,11 @@ Object {
                   },
                   "\\",
   \\"Key\\": {
-    \\"id\\": {
-      \\"S\\": \\"$input.path('$.id')\\"
+    \\"rid\\": {
+      \\"S\\": \\"$input.path('$.rid')\\"
+    },
+    \\"fid\\": {
+      \\"S\\": \\"$input.path('$.fid')\\"
     }
   },
   \\"ExpressionAttributeValues\\": {
@@ -595,7 +603,7 @@ Object {
           },
         ],
         "ResourceId": Object {
-          "Ref": "GatewayRestApiidD030986A",
+          "Ref": "GatewayRestApiridEB78EB12",
         },
         "RestApiId": Object {
           "Ref": "GatewayRestApi1CBA9451",
@@ -681,15 +689,23 @@ Object {
       "Properties": Object {
         "AttributeDefinitions": Array [
           Object {
-            "AttributeName": "id",
+            "AttributeName": "rid",
+            "AttributeType": "S",
+          },
+          Object {
+            "AttributeName": "fid",
             "AttributeType": "S",
           },
         ],
         "BillingMode": "PAY_PER_REQUEST",
         "KeySchema": Array [
           Object {
-            "AttributeName": "id",
+            "AttributeName": "rid",
             "KeyType": "HASH",
+          },
+          Object {
+            "AttributeName": "fid",
+            "KeyType": "RANGE",
           },
         ],
         "PointInTimeRecoverySpecification": Object {
