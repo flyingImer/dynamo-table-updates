@@ -12,7 +12,9 @@ const project = new AwsCdkTypeScriptApp({
   projenCommand: `CDK_DEP_VERSION=$(yarn info ${DEP_CORE_PKG_NAME} version -s) npx projen`,
 
   cdkDependencies: [
+    '@aws-cdk/aws-apigateway',
     '@aws-cdk/aws-dynamodb',
+    '@aws-cdk/aws-iam',
   ], /* Which AWS CDK modules (those that start with "@aws-cdk/") this app uses. */
   deps: [
     `${DEP_CORE_PKG_NAME}@${DEPS_COMPATIBLE_CDK_VERSION}`,
