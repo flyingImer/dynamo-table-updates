@@ -1,7 +1,9 @@
-import { AttributeType, Table } from '@aws-cdk/aws-dynamodb';
+import { AttributeType, StreamViewType, Table } from '@aws-cdk/aws-dynamodb';
 import { PolicyStatement } from '@aws-cdk/aws-iam';
+import { Code, Runtime } from '@aws-cdk/aws-lambda';
 import { App, Construct, RemovalPolicy, Stack, StackProps } from '@aws-cdk/core';
 import { ApiGatewayToDynamoDB } from '@aws-solutions-constructs/aws-apigateway-dynamodb';
+import { DynamoDBStreamsToLambda } from '@aws-solutions-constructs/aws-dynamodbstreams-lambda';
 import { addProxyMethodToApiResource, DefaultTableProps } from '@aws-solutions-constructs/core';
 
 export class DynamoUpdatesStack extends Stack {
@@ -11,6 +13,8 @@ export class DynamoUpdatesStack extends Stack {
     super(scope, id, props);
 
     // define resources here...
+
+    // core table
     const table = new Table(this, 'Table', {
       ...DefaultTableProps,
       partitionKey: {
@@ -21,9 +25,11 @@ export class DynamoUpdatesStack extends Stack {
         name: 'fid',
         type: AttributeType.STRING,
       },
-      // TODO: enable stream
+      stream: StreamViewType.KEYS_ONLY,
       removalPolicy: RemovalPolicy.DESTROY,
     });
+
+    // fronting gateway
     const gateway = new ApiGatewayToDynamoDB(this, 'Gateway', {
       existingTableObj: table,
       logGroupProps: {
@@ -36,6 +42,16 @@ export class DynamoUpdatesStack extends Stack {
       updateRequestTemplate: '{\r\n  "TableName": "${Table}",\r\n  "Key": {\r\n    ' + this.PRIMARY_KEYS_TEMPLATE + "\r\n  },\r\n  \"ExpressionAttributeValues\": {\r\n    \":event_count\": {\r\n      \"N\": \"$input.path('$.EventCount')\"\r\n    },\r\n    \":message\": {\r\n      \"S\": \"$input.path('$.Message')\"\r\n    }\r\n  },\r\n  \"UpdateExpression\": \"ADD EventCount :event_count SET Message = :message\",\r\n  \"ReturnValues\": \"ALL_NEW\"\r\n}",
     });
     this.patchDeleteOperation(gateway, table);
+
+    // ddb stream
+    new DynamoDBStreamsToLambda(this, 'DynamoStream', {
+      existingTableInterface: table,
+      lambdaFunctionProps: {
+        code: Code.fromAsset(`${__dirname}/lambda`),
+        runtime: Runtime.NODEJS_12_X,
+        handler: 'index.handler',
+      },
+    });
   }
 
   /**

@@ -15,6 +15,7 @@ const project = new AwsCdkTypeScriptApp({
     '@aws-cdk/aws-apigateway',
     '@aws-cdk/aws-dynamodb',
     '@aws-cdk/aws-iam',
+    '@aws-cdk/aws-lambda',
   ], /* Which AWS CDK modules (those that start with "@aws-cdk/") this app uses. */
   deps: [
     `${DEP_CORE_PKG_NAME}@${DEPS_COMPATIBLE_CDK_VERSION}`,
