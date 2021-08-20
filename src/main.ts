@@ -32,7 +32,7 @@ export class DynamoUpdatesStack extends Stack {
         name: 'fid',
         type: AttributeType.STRING,
       },
-      stream: StreamViewType.KEYS_ONLY,
+      stream: StreamViewType.NEW_IMAGE,
     });
 
     // fronting gateway
