@@ -43,98 +43,227 @@ Object {
       "Description": "S3 key for asset version \\"67b7823b74bc135986aa72f889d6a8da058d0c4a20cbc2dfc6f78995fdd2fc24\\"",
       "Type": "String",
     },
-    "AssetParametersb53cad44b3b3c69eee5d909acdead9169c3ff5122e55bf6577065e72fb8d163fArtifactHash84BFBDC4": Object {
-      "Description": "Artifact hash for asset \\"b53cad44b3b3c69eee5d909acdead9169c3ff5122e55bf6577065e72fb8d163f\\"",
+    "AssetParametersdc4d897577357d3116ab2d21ea6291719a0edf1c721bd82bf3ab742d837a2a72ArtifactHashF8EDB06D": Object {
+      "Description": "Artifact hash for asset \\"dc4d897577357d3116ab2d21ea6291719a0edf1c721bd82bf3ab742d837a2a72\\"",
       "Type": "String",
     },
-    "AssetParametersb53cad44b3b3c69eee5d909acdead9169c3ff5122e55bf6577065e72fb8d163fS3Bucket4E2C5751": Object {
-      "Description": "S3 bucket for asset \\"b53cad44b3b3c69eee5d909acdead9169c3ff5122e55bf6577065e72fb8d163f\\"",
+    "AssetParametersdc4d897577357d3116ab2d21ea6291719a0edf1c721bd82bf3ab742d837a2a72S3BucketBBEEE165": Object {
+      "Description": "S3 bucket for asset \\"dc4d897577357d3116ab2d21ea6291719a0edf1c721bd82bf3ab742d837a2a72\\"",
       "Type": "String",
     },
-    "AssetParametersb53cad44b3b3c69eee5d909acdead9169c3ff5122e55bf6577065e72fb8d163fS3VersionKeyA90E0CEA": Object {
-      "Description": "S3 key for asset version \\"b53cad44b3b3c69eee5d909acdead9169c3ff5122e55bf6577065e72fb8d163f\\"",
+    "AssetParametersdc4d897577357d3116ab2d21ea6291719a0edf1c721bd82bf3ab742d837a2a72S3VersionKey5841D009": Object {
+      "Description": "S3 key for asset version \\"dc4d897577357d3116ab2d21ea6291719a0edf1c721bd82bf3ab742d837a2a72\\"",
       "Type": "String",
     },
   },
   "Resources": Object {
-    "DynamoStreamSqsDlqQueueBD971080": Object {
-      "DeletionPolicy": "Delete",
+    "Adaptor859FC031": Object {
+      "DependsOn": Array [
+        "AdaptorServiceRoleDefaultPolicy1B4812E1",
+        "AdaptorServiceRole0499C7C7",
+      ],
       "Properties": Object {
-        "KmsMasterKeyId": "alias/aws/sqs",
-      },
-      "Type": "AWS::SQS::Queue",
-      "UpdateReplacePolicy": "Delete",
-    },
-    "DynamoStreamSqsDlqQueuePolicyF3D1D7E1": Object {
-      "Properties": Object {
-        "PolicyDocument": Object {
-          "Statement": Array [
-            Object {
-              "Action": Array [
-                "sqs:DeleteMessage",
-                "sqs:ReceiveMessage",
-                "sqs:SendMessage",
-                "sqs:GetQueueAttributes",
-                "sqs:RemovePermission",
-                "sqs:AddPermission",
-                "sqs:SetQueueAttributes",
-              ],
-              "Effect": "Allow",
-              "Principal": Object {
-                "AWS": Object {
-                  "Fn::Join": Array [
-                    "",
-                    Array [
-                      "arn:",
-                      Object {
-                        "Ref": "AWS::Partition",
-                      },
-                      ":iam::",
-                      Object {
-                        "Ref": "AWS::AccountId",
-                      },
-                      ":root",
-                    ],
+        "Code": Object {
+          "S3Bucket": Object {
+            "Ref": "AssetParametersdc4d897577357d3116ab2d21ea6291719a0edf1c721bd82bf3ab742d837a2a72S3BucketBBEEE165",
+          },
+          "S3Key": Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                Object {
+                  "Fn::Select": Array [
+                    0,
+                    Object {
+                      "Fn::Split": Array [
+                        "||",
+                        Object {
+                          "Ref": "AssetParametersdc4d897577357d3116ab2d21ea6291719a0edf1c721bd82bf3ab742d837a2a72S3VersionKey5841D009",
+                        },
+                      ],
+                    },
                   ],
                 },
-              },
-              "Resource": Object {
-                "Fn::GetAtt": Array [
-                  "DynamoStreamSqsDlqQueueBD971080",
-                  "Arn",
-                ],
-              },
-              "Sid": "QueueOwnerOnlyAccess",
-            },
-            Object {
-              "Action": "SQS:*",
-              "Condition": Object {
-                "Bool": Object {
-                  "aws:SecureTransport": "false",
+                Object {
+                  "Fn::Select": Array [
+                    1,
+                    Object {
+                      "Fn::Split": Array [
+                        "||",
+                        Object {
+                          "Ref": "AssetParametersdc4d897577357d3116ab2d21ea6291719a0edf1c721bd82bf3ab742d837a2a72S3VersionKey5841D009",
+                        },
+                      ],
+                    },
+                  ],
                 },
+              ],
+            ],
+          },
+        },
+        "Environment": Object {
+          "Variables": Object {
+            "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
+            "EVENT_BUS_ARN": Object {
+              "Fn::GetAtt": Array [
+                "ReplaySink39CE0457",
+                "Arn",
+              ],
+            },
+          },
+        },
+        "Handler": "index.handler",
+        "Role": Object {
+          "Fn::GetAtt": Array [
+            "AdaptorServiceRole0499C7C7",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs14.x",
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "AdaptorDynamoDBEventSourcetestTable1B95715705D045C7": Object {
+      "Properties": Object {
+        "BatchSize": 200,
+        "BisectBatchOnFunctionError": true,
+        "DestinationConfig": Object {
+          "OnFailure": Object {
+            "Destination": Object {
+              "Fn::GetAtt": Array [
+                "UpdatesStreamSqsDlqQueue2D9E4A54",
+                "Arn",
+              ],
+            },
+          },
+        },
+        "EventSourceArn": Object {
+          "Fn::GetAtt": Array [
+            "TableCD117FA1",
+            "StreamArn",
+          ],
+        },
+        "FunctionName": Object {
+          "Ref": "Adaptor859FC031",
+        },
+        "MaximumRecordAgeInSeconds": 86400,
+        "MaximumRetryAttempts": 3,
+        "StartingPosition": "TRIM_HORIZON",
+      },
+      "Type": "AWS::Lambda::EventSourceMapping",
+    },
+    "AdaptorLogRetention527A6A48": Object {
+      "Properties": Object {
+        "LogGroupName": Object {
+          "Fn::Join": Array [
+            "",
+            Array [
+              "/aws/lambda/",
+              Object {
+                "Ref": "Adaptor859FC031",
               },
-              "Effect": "Deny",
+            ],
+          ],
+        },
+        "RetentionInDays": 30,
+        "ServiceToken": Object {
+          "Fn::GetAtt": Array [
+            "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aFD4BFC8A",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "Custom::LogRetention",
+    },
+    "AdaptorServiceRole0499C7C7": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
               "Principal": Object {
-                "AWS": "*",
+                "Service": "lambda.amazonaws.com",
               },
-              "Resource": Object {
-                "Fn::GetAtt": Array [
-                  "DynamoStreamSqsDlqQueueBD971080",
-                  "Arn",
-                ],
-              },
-              "Sid": "HttpsOnly",
             },
           ],
           "Version": "2012-10-17",
         },
-        "Queues": Array [
+        "ManagedPolicyArns": Array [
           Object {
-            "Ref": "DynamoStreamSqsDlqQueueBD971080",
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:",
+                Object {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
           },
         ],
       },
-      "Type": "AWS::SQS::QueuePolicy",
+      "Type": "AWS::IAM::Role",
+    },
+    "AdaptorServiceRoleDefaultPolicy1B4812E1": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "events:PutEvents",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::GetAtt": Array [
+                  "ReplaySink39CE0457",
+                  "Arn",
+                ],
+              },
+            },
+            Object {
+              "Action": "dynamodb:ListStreams",
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+            Object {
+              "Action": Array [
+                "dynamodb:DescribeStream",
+                "dynamodb:GetRecords",
+                "dynamodb:GetShardIterator",
+              ],
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::GetAtt": Array [
+                  "TableCD117FA1",
+                  "StreamArn",
+                ],
+              },
+            },
+            Object {
+              "Action": Array [
+                "sqs:SendMessage",
+                "sqs:GetQueueAttributes",
+                "sqs:GetQueueUrl",
+              ],
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::GetAtt": Array [
+                  "UpdatesStreamSqsDlqQueue2D9E4A54",
+                  "Arn",
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "AdaptorServiceRoleDefaultPolicy1B4812E1",
+        "Roles": Array [
+          Object {
+            "Ref": "AdaptorServiceRole0499C7C7",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
     },
     "GatewayApiAccessLogGroup3CFE23D4": Object {
       "DeletionPolicy": "Delete",
@@ -1064,6 +1193,17 @@ Object {
               },
               "Sid": "HttpsOnly",
             },
+            Object {
+              "Action": "sns:Publish",
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": "events.amazonaws.com",
+              },
+              "Resource": Object {
+                "Ref": "ImmediateUpdatesTopic3DF06BB2",
+              },
+              "Sid": "2",
+            },
           ],
           "Version": "2012-10-17",
         },
@@ -1185,213 +1325,31 @@ Object {
       },
       "Type": "AWS::IAM::Policy",
     },
-    "PublisherDynamoDBEventSourcetestTable1B9571572C507467": Object {
+    "ReplaySink39CE0457": Object {
       "Properties": Object {
-        "BatchSize": 100,
-        "BisectBatchOnFunctionError": true,
-        "DestinationConfig": Object {
-          "OnFailure": Object {
-            "Destination": Object {
-              "Fn::GetAtt": Array [
-                "DynamoStreamSqsDlqQueueBD971080",
-                "Arn",
-              ],
-            },
-          },
-        },
-        "EventSourceArn": Object {
-          "Fn::GetAtt": Array [
-            "TableCD117FA1",
-            "StreamArn",
-          ],
-        },
-        "FunctionName": Object {
-          "Ref": "PublisherF0355618",
-        },
-        "MaximumRecordAgeInSeconds": 86400,
-        "MaximumRetryAttempts": 500,
-        "StartingPosition": "TRIM_HORIZON",
+        "Name": "testReplaySinkC558D883",
       },
-      "Type": "AWS::Lambda::EventSourceMapping",
+      "Type": "AWS::Events::EventBus",
     },
-    "PublisherF0355618": Object {
-      "DependsOn": Array [
-        "PublisherServiceRoleDefaultPolicy0E21E942",
-        "PublisherServiceRoleF4D9160F",
-      ],
+    "ReplaySinkArchive133D4ABA": Object {
       "Properties": Object {
-        "Code": Object {
-          "S3Bucket": Object {
-            "Ref": "AssetParametersb53cad44b3b3c69eee5d909acdead9169c3ff5122e55bf6577065e72fb8d163fS3Bucket4E2C5751",
-          },
-          "S3Key": Object {
-            "Fn::Join": Array [
-              "",
-              Array [
-                Object {
-                  "Fn::Select": Array [
-                    0,
-                    Object {
-                      "Fn::Split": Array [
-                        "||",
-                        Object {
-                          "Ref": "AssetParametersb53cad44b3b3c69eee5d909acdead9169c3ff5122e55bf6577065e72fb8d163fS3VersionKeyA90E0CEA",
-                        },
-                      ],
-                    },
-                  ],
-                },
-                Object {
-                  "Fn::Select": Array [
-                    1,
-                    Object {
-                      "Fn::Split": Array [
-                        "||",
-                        Object {
-                          "Ref": "AssetParametersb53cad44b3b3c69eee5d909acdead9169c3ff5122e55bf6577065e72fb8d163fS3VersionKeyA90E0CEA",
-                        },
-                      ],
-                    },
-                  ],
-                },
-              ],
-            ],
-          },
-        },
-        "Environment": Object {
-          "Variables": Object {
-            "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
-            "SNS_TOPIC_ARN": Object {
-              "Ref": "ImmediateUpdatesTopic3DF06BB2",
+        "Description": "FACET_RECORD_L1_1.0",
+        "EventPattern": Object {
+          "account": Array [
+            Object {
+              "Ref": "AWS::AccountId",
             },
-            "SNS_TOPIC_NAME": Object {
-              "Fn::GetAtt": Array [
-                "ImmediateUpdatesTopic3DF06BB2",
-                "TopicName",
-              ],
-            },
-          },
-        },
-        "Handler": "index.handler",
-        "Role": Object {
-          "Fn::GetAtt": Array [
-            "PublisherServiceRoleF4D9160F",
-            "Arn",
           ],
         },
-        "Runtime": "nodejs14.x",
-      },
-      "Type": "AWS::Lambda::Function",
-    },
-    "PublisherLogRetentionE4EC9FBA": Object {
-      "Properties": Object {
-        "LogGroupName": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              "/aws/lambda/",
-              Object {
-                "Ref": "PublisherF0355618",
-              },
-            ],
-          ],
-        },
-        "RetentionInDays": 30,
-        "ServiceToken": Object {
+        "RetentionDays": 7,
+        "SourceArn": Object {
           "Fn::GetAtt": Array [
-            "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aFD4BFC8A",
+            "ReplaySink39CE0457",
             "Arn",
           ],
         },
       },
-      "Type": "Custom::LogRetention",
-    },
-    "PublisherServiceRoleDefaultPolicy0E21E942": Object {
-      "Properties": Object {
-        "PolicyDocument": Object {
-          "Statement": Array [
-            Object {
-              "Action": "dynamodb:ListStreams",
-              "Effect": "Allow",
-              "Resource": "*",
-            },
-            Object {
-              "Action": Array [
-                "dynamodb:DescribeStream",
-                "dynamodb:GetRecords",
-                "dynamodb:GetShardIterator",
-              ],
-              "Effect": "Allow",
-              "Resource": Object {
-                "Fn::GetAtt": Array [
-                  "TableCD117FA1",
-                  "StreamArn",
-                ],
-              },
-            },
-            Object {
-              "Action": Array [
-                "sqs:SendMessage",
-                "sqs:GetQueueAttributes",
-                "sqs:GetQueueUrl",
-              ],
-              "Effect": "Allow",
-              "Resource": Object {
-                "Fn::GetAtt": Array [
-                  "DynamoStreamSqsDlqQueueBD971080",
-                  "Arn",
-                ],
-              },
-            },
-            Object {
-              "Action": "sns:Publish",
-              "Effect": "Allow",
-              "Resource": Object {
-                "Ref": "ImmediateUpdatesTopic3DF06BB2",
-              },
-            },
-          ],
-          "Version": "2012-10-17",
-        },
-        "PolicyName": "PublisherServiceRoleDefaultPolicy0E21E942",
-        "Roles": Array [
-          Object {
-            "Ref": "PublisherServiceRoleF4D9160F",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Policy",
-    },
-    "PublisherServiceRoleF4D9160F": Object {
-      "Properties": Object {
-        "AssumeRolePolicyDocument": Object {
-          "Statement": Array [
-            Object {
-              "Action": "sts:AssumeRole",
-              "Effect": "Allow",
-              "Principal": Object {
-                "Service": "lambda.amazonaws.com",
-              },
-            },
-          ],
-          "Version": "2012-10-17",
-        },
-        "ManagedPolicyArns": Array [
-          Object {
-            "Fn::Join": Array [
-              "",
-              Array [
-                "arn:",
-                Object {
-                  "Ref": "AWS::Partition",
-                },
-                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
-              ],
-            ],
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
+      "Type": "AWS::Events::Archive",
     },
     "TableCD117FA1": Object {
       "DeletionPolicy": "Delete",
@@ -1424,11 +1382,115 @@ Object {
           "SSEEnabled": true,
         },
         "StreamSpecification": Object {
-          "StreamViewType": "KEYS_ONLY",
+          "StreamViewType": "NEW_IMAGE",
         },
       },
       "Type": "AWS::DynamoDB::Table",
       "UpdateReplacePolicy": "Delete",
+    },
+    "UpdatesEventRule9E916997": Object {
+      "Properties": Object {
+        "EventBusName": Object {
+          "Ref": "ReplaySink39CE0457",
+        },
+        "EventPattern": Object {
+          "account": Array [
+            Object {
+              "Ref": "AWS::AccountId",
+            },
+          ],
+        },
+        "State": "ENABLED",
+        "Targets": Array [
+          Object {
+            "Arn": Object {
+              "Ref": "ImmediateUpdatesTopic3DF06BB2",
+            },
+            "Id": "Target0",
+            "InputPath": "$.detail",
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
+    "UpdatesStreamSqsDlqQueue2D9E4A54": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "KmsMasterKeyId": "alias/aws/sqs",
+      },
+      "Type": "AWS::SQS::Queue",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "UpdatesStreamSqsDlqQueuePolicyE53DF7E6": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "sqs:DeleteMessage",
+                "sqs:ReceiveMessage",
+                "sqs:SendMessage",
+                "sqs:GetQueueAttributes",
+                "sqs:RemovePermission",
+                "sqs:AddPermission",
+                "sqs:SetQueueAttributes",
+              ],
+              "Effect": "Allow",
+              "Principal": Object {
+                "AWS": Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:",
+                      Object {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":iam::",
+                      Object {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":root",
+                    ],
+                  ],
+                },
+              },
+              "Resource": Object {
+                "Fn::GetAtt": Array [
+                  "UpdatesStreamSqsDlqQueue2D9E4A54",
+                  "Arn",
+                ],
+              },
+              "Sid": "QueueOwnerOnlyAccess",
+            },
+            Object {
+              "Action": "SQS:*",
+              "Condition": Object {
+                "Bool": Object {
+                  "aws:SecureTransport": "false",
+                },
+              },
+              "Effect": "Deny",
+              "Principal": Object {
+                "AWS": "*",
+              },
+              "Resource": Object {
+                "Fn::GetAtt": Array [
+                  "UpdatesStreamSqsDlqQueue2D9E4A54",
+                  "Arn",
+                ],
+              },
+              "Sid": "HttpsOnly",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "Queues": Array [
+          Object {
+            "Ref": "UpdatesStreamSqsDlqQueue2D9E4A54",
+          },
+        ],
+      },
+      "Type": "AWS::SQS::QueuePolicy",
     },
   },
 }

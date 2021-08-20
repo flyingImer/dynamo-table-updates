@@ -1,14 +1,16 @@
 import * as path from 'path';
 import { AttributeType, StreamViewType, Table } from '@aws-cdk/aws-dynamodb';
+import { EventBus, Rule, RuleTargetInput } from '@aws-cdk/aws-events';
+import { SnsTopic } from '@aws-cdk/aws-events-targets';
 import { AccountPrincipal, AnyPrincipal, Effect, PolicyStatement } from '@aws-cdk/aws-iam';
 import { NodejsFunction } from '@aws-cdk/aws-lambda-nodejs';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 import { Topic } from '@aws-cdk/aws-sns';
 import { QueueEncryption } from '@aws-cdk/aws-sqs';
-import { App, Construct, RemovalPolicy, Stack, StackProps } from '@aws-cdk/core';
+import { App, Construct, Duration, RemovalPolicy, Stack, StackProps } from '@aws-cdk/core';
 import { ApiGatewayToDynamoDB } from '@aws-solutions-constructs/aws-apigateway-dynamodb';
 import { DynamoDBStreamsToLambda } from '@aws-solutions-constructs/aws-dynamodbstreams-lambda';
-import { LambdaToSns } from '@aws-solutions-constructs/aws-lambda-sns';
+// import { LambdaToSns } from '@aws-solutions-constructs/aws-lambda-sns';
 import { SnsToSqs } from '@aws-solutions-constructs/aws-sns-sqs';
 import { addProxyMethodToApiResource, DefaultTableProps } from '@aws-solutions-constructs/core';
 import { Removal } from './aspect';
@@ -46,26 +48,61 @@ export class DynamoUpdatesStack extends Stack {
     });
     this.patchDeleteOperation(gateway, table);
 
-    // publish stream records to SNS topic
-    const publisher = new NodejsFunction(this, 'Publisher', {
-      entry: path.join(__dirname, 'publisher-lambda', 'index.ts'),
+    // // publish stream records to SNS topic
+    // const publisher = new NodejsFunction(this, 'Publisher', {
+    //   entry: path.join(__dirname, 'publisher-lambda', 'index.ts'),
+    //   logRetention: RetentionDays.ONE_MONTH,
+    // });
+
+    // adapt stream records to event bridge
+    const adaptor = new NodejsFunction(this, 'Adaptor', {
+      entry: path.join(__dirname, 'adaptor-lambda', 'index.ts'),
       logRetention: RetentionDays.ONE_MONTH,
     });
 
+    // event bus for replay
+    const sink = new EventBus(this, 'ReplaySink');
+    sink.archive('Archive', {
+      description: 'FACET_RECORD_L1_1.0',
+      eventPattern: {
+        account: [Stack.of(this).account],
+      },
+      retention: Duration.days(7),
+    });
+    sink.grantPutEventsTo(adaptor);
+    adaptor.addEnvironment('EVENT_BUS_ARN', sink.eventBusArn);
+
     // ddb stream
-    new DynamoDBStreamsToLambda(this, 'DynamoStream', {
+    new DynamoDBStreamsToLambda(this, 'UpdatesStream', {
       existingTableInterface: table,
-      existingLambdaObj: publisher,
+      existingLambdaObj: adaptor,
+      dynamoEventSourceProps: {
+        retryAttempts: 3,
+        // event bridge has size limit of 256KB on PutEvents, but we may do fine grained calculation
+        // details: https://docs.aws.amazon.com/eventbridge/latest/userguide/calculate-putevents-entry-size.html
+        batchSize: 200,
+      },
     });
 
     // throughput first for ImmediateUpdates
     const immediateTopic = new Topic(this, 'ImmediateUpdatesTopic');
     this.applySecureTopicPolicy(immediateTopic);
 
-    new LambdaToSns(this, 'ImmediateUpdates', {
-      existingLambdaObj: publisher,
-      existingTopicObj: immediateTopic,
+    // publish to SNS topic
+    new Rule(this, 'UpdatesEventRule', {
+      eventBus: sink,
+      eventPattern: {
+        account: [Stack.of(this).account],
+      },
+      targets: [new SnsTopic(immediateTopic, {
+        message: RuleTargetInput.fromEventPath('$.detail'),
+      })],
     });
+
+    // new LambdaToSns(this, 'ImmediateUpdates', {
+    //   existingLambdaObj: publisher,
+    //   existingTopicObj: immediateTopic,
+    // });
 
     new SnsToSqs(this, 'ImmediateConsumer', {
       enableEncryptionWithCustomerManagedKey: false,

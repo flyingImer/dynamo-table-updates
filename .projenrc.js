@@ -14,6 +14,8 @@ const project = new AwsCdkTypeScriptApp({
   cdkDependencies: [
     '@aws-cdk/aws-apigateway',
     '@aws-cdk/aws-dynamodb',
+    '@aws-cdk/aws-events',
+    '@aws-cdk/aws-events-targets',
     '@aws-cdk/aws-iam',
     '@aws-cdk/aws-lambda-nodejs',
     '@aws-cdk/aws-logs',
