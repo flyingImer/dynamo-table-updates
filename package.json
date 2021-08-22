@@ -20,7 +20,7 @@
     "projen": "CDK_DEP_VERSION=$(yarn info @aws-solutions-constructs/core version -s) npx projen"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.82",
+    "@types/aws-lambda": "^8.10.83",
     "@types/jest": "^27.0.1",
     "@types/node": "^10.17.0",
     "@typescript-eslint/eslint-plugin": "^4.29.2",
@@ -30,13 +30,13 @@
     "eslint": "^7.32.0",
     "eslint-import-resolver-node": "^0.3.6",
     "eslint-import-resolver-typescript": "^2.4.0",
-    "eslint-plugin-import": "^2.24.0",
+    "eslint-plugin-import": "^2.24.1",
     "jest": "^27.0.6",
     "jest-junit": "^12",
     "json-schema": "^0.3.0",
     "npm-check-updates": "^11",
     "projen": "^0.27.30",
-    "ts-jest": "^27.0.4",
+    "ts-jest": "^27.0.5",
     "ts-node": "^9",
     "typescript": "^4.3.5"
   },
